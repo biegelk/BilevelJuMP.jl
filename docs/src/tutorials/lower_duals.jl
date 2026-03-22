@@ -100,21 +100,25 @@ BilevelJuMP.set_mode(model,
     BilevelJuMP.FortunyAmatMcCarlMode(dual_big_M = 100))
 optimize!(model)
 
-# ## More on `DualOf` usage
+# ## Using `DualOf()` with vectors of constraints
 
-# You might have a problem where you want duals of a vector of constraints like:
+# `DualOf()` can also be used to create a vector of variables in the upper
+# problem based on a vector of named constraints in the lower problem.
+
+# `DualOf()` requires a named constraint as an input, for example:
 
 @constraint(Lower(model), reserves[i=1:3], (40 - g1) + (40 - g2) == 10 * i)
 
-# then you can do
+# You can use `DualOf()` with the built-in JuMP method for creating vectors of
+# named variables:
 
 @variable(Upper(model), reserve_dual[i=1:3], DualOf(reserves[i]))
 
-# or use anonymous variables
+# You can also use `DualOf()` to create a vector of anonymous variables:
 
 my_duals = []
 for i in 1:3
     var = @variable(Upper(model), variable_type = DualOf(reserves[i]))
     push!(my_duals, var)
 end
-my_duals # a vector of anonimous variables
+my_duals # a vector of anonymous variables
