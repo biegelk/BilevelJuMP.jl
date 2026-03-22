@@ -1,17 +1,23 @@
 # # Dual variables of the lower level
 
-# This is a quick introduction to modeling and solving bilevel optimization
-# with BilevelJuMP.
+# BilevelJuMP supports use of duals of lower-problem constraints as variables
+# in the upper problem via the `DualOf()` function.
 
-# This modeling feature enables the implementation of workflows where one
-# (or more) of the upper-level variables is the dual of a lower-level
-# constraint. In particular, in the energy sector, it is common to model the
-# energy prices as the dual variable associated with the energy demand
-# equilibrium constraint. One example of an application that uses this feature
-# is [Fanzeres et al. (2019)](https://doi.org/10.1016/j.ejor.2018.07.027),
-# which focuses on strategic bidding in
-# auction-based energy markets. A small and simplified example of the modeled
-# problem would be the model:
+# `DualOf()` takes a named constraint from the lower problem as an argument.
+# It is used in the `expr` argument of the `@variable` JuMP macro:
+
+@constraint(Lower(model), some_constraint, x <= y)
+
+@variable(Upper(model), lambda, DualOf(some_constraint))
+
+# ## Example: strategic bidding in an energy market 
+
+# In the energy sector, it is common to model market prices as the dual of the
+# demand equilibrium constraint in the lower-level economic dispatch problem.
+# One example of this approach is found in
+# [Fanzeres et al. (2019)](https://doi.org/10.1016/j.ejor.2018.07.027),
+# which focuses on strategic energy offers in auction-based energy markets. A
+# simplified example of the model is:
 
 # ```math
 # \begin{align}
@@ -68,7 +74,7 @@ model = BilevelModel()
 @variable(Upper(model), lambda, DualOf(demand_equilibrium))
 @objective(Upper(model), Max, lambda*gS)
 
-# ## NLP solution
+# ### NLP solution
 
 # This model can be solved by selecting a reformulation and a solver.
 # Here we select Strong-Duality reformulation and the Ipopt solver, and call
@@ -78,7 +84,7 @@ BilevelJuMP.set_mode(model, BilevelJuMP.StrongDualityMode())
 set_optimizer(model, Ipopt.Optimizer)
 optimize!(model)
 
-# ## MIP solution
+# ### MIP solution
 
 # BilevelJuMP.jl can also solve such problems by using a MIP formulation.
 # The main issue is the product of variables in the upper level objective.
