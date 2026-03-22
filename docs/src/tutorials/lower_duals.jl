@@ -27,12 +27,17 @@
 # \end{align}
 # ```
 
-# Where $\lambda$ is the dual of the load balance constraint
-# (last constraint in the lower part),
-# $g_S$, $g_{1}$, $g_2$ represent the generation of
-# the strategic bidder and from two other (non-strategic) plants.
-# $g_D$ represents the deficit in generation.
-# Finally, $q_S$ is the quantity bid optimized by the strategic generator.
+# where:
+#  * $S$ is the strategically-bidding asset controlled by the upper-problem
+#    agent, where:
+#    * $q_S$ is the quantity of generation offered into the market, to be
+#      optimized by the upper-problem agent to maximize revenue, and
+#    * $g_S$ is the quantity of generation dispatched by the lower-problem
+#      system operator, which is no greater than $q_S$
+#  * $g_1$ and $g_2$ are the generation of two other non-strategic,
+#    price-taking generators;
+#  * $g_D$ is the deficit in generation; and
+#  * $\lambda$ is the dual of the load balance constraint (9)
 
 # To implement this model in BilevelJuMP, first load the necessary packages:
 
@@ -65,9 +70,9 @@ model = BilevelModel()
 
 # ## NLP solution
 
-# This model, can be solved by selecting a reformulation and a solver.
-# Here we select Strong-Duality reformulation, the Ipopt solver and call
-# optimizes to perform the reformulation and solve it.
+# This model can be solved by selecting a reformulation and a solver.
+# Here we select Strong-Duality reformulation and the Ipopt solver, and call
+# `optimize!()` to perform the reformulation and solve it.
 
 BilevelJuMP.set_mode(model, BilevelJuMP.StrongDualityMode())
 set_optimizer(model, Ipopt.Optimizer)
@@ -75,8 +80,8 @@ optimize!(model)
 
 # ## MIP solution
 
-# It is also possible to solve such problem by using a MIP formulation.
-# The main issue is the product of variable in the upper level objective.
+# BilevelJuMP.jl can also solve such problems by using a MIP formulation.
+# The main issue is the product of variables in the upper level objective.
 # However, this can be easily handled by using the package
 # `QuadraticToBinary.jl` for automatic binary expansions.
 # Because binary expansions require bounds on variables,
