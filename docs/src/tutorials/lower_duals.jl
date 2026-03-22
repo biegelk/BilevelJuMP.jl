@@ -34,27 +34,32 @@
 # $g_D$ represents the deficit in generation.
 # Finally, $q_S$ is the quantity bid optimized by the strategic generator.
 
-# load packages
+# To implement this model in BilevelJuMP, first load the necessary packages:
 
 using BilevelJuMP
 using Ipopt
 using QuadraticToBinary
 using HiGHS
 
-# BilevelJuMP.jl allows users to implement similar models using the
-# function `DualOf` that binds a new variable in the upper level
-# to an existing constraint in the lower level.
-# The model can be written as:
+# Instantiate the model and fully describe the lower problem:
 
 model = BilevelModel()
+
 @variable(Upper(model), 0 <= qS <= 100)
+
 @variable(Lower(model), 0 <= gS <= 100)
 @variable(Lower(model), 0 <= g1 <= 40)
 @variable(Lower(model), 0 <= g2 <= 40)
 @variable(Lower(model), 0 <= gD <= 100)
+
 @objective(Lower(model), Min, 50g1 + 100g2 + 1000gD)
+
 @constraint(Lower(model), gS <= qS)
 @constraint(Lower(model), demand_equilibrium, gS + g1 + g2 + gD == 100)
+
+# The BilevelJuMP.jl function `DualOf()` binds a new variable in the upper
+# level to an existing constraint in the lower level:
+
 @variable(Upper(model), lambda, DualOf(demand_equilibrium))
 @objective(Upper(model), Max, lambda*gS)
 
