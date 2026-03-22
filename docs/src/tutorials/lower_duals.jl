@@ -17,7 +17,7 @@
 # \begin{align}
 #     &\max_{\lambda, q_S} \quad \lambda \cdot g_S \\
 #     &\textit{s.t.} \quad 0 \leq q_S \leq 100\\
-#     &\hspace{28pt} (g_S, \lambda) \in \arg\min_{g_S, g_{1}, g_{2}, g_D} 50 g_{R1} + 100  g_{R2} + 1000 g_{D}\\
+#     &\hspace{28pt} (g_S, \lambda) \in \arg\min_{g_S, g_{1}, g_{2}, g_D} 50 g_{1} + 100  g_{2} + 1000 g_{D}\\
 #             & \hspace{70pt} \textit{s.t.} \quad g_S \leq q_S \\
 #             & \hspace{88pt} \quad  0 \leq g_S \leq 100 \\
 #             & \hspace{88pt}\quad  0 \leq g_{1} \leq 40 \\
@@ -49,12 +49,12 @@ using HiGHS
 model = BilevelModel()
 @variable(Upper(model), 0 <= qS <= 100)
 @variable(Lower(model), 0 <= gS <= 100)
-@variable(Lower(model), 0 <= gR1 <= 40)
-@variable(Lower(model), 0 <= gR2 <= 40)
+@variable(Lower(model), 0 <= g1 <= 40)
+@variable(Lower(model), 0 <= g2 <= 40)
 @variable(Lower(model), 0 <= gD <= 100)
-@objective(Lower(model), Min, 50gR1 + 100gR2 + 1000gD)
+@objective(Lower(model), Min, 50g1 + 100g2 + 1000gD)
 @constraint(Lower(model), gS <= qS)
-@constraint(Lower(model), demand_equilibrium, gS + gR1 + gR2 + gD == 100)
+@constraint(Lower(model), demand_equilibrium, gS + g1 + g2 + gD == 100)
 @variable(Upper(model), lambda, DualOf(demand_equilibrium))
 @objective(Upper(model), Max, lambda*gS)
 
@@ -94,7 +94,7 @@ optimize!(model)
 
 # You might have a problem where you want duals of a vector of constraints like:
 
-@constraint(Lower(model), reserves[i=1:3], (40 - gR1) + (40 - gR2) == 10 * i)
+@constraint(Lower(model), reserves[i=1:3], (40 - g1) + (40 - g2) == 10 * i)
 
 # then you can do
 
